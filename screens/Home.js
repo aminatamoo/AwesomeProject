@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 import ColorPreview from "../components/ColorPreview"
 
@@ -38,20 +38,34 @@ const RAINBOW = [
   { colorName: 'Violet', hexCode: '#8B00FF' },
 ];
 
-export default function Home( { navigation } ) {
+export default function Home() {
+  const navigation = useNavigation();
+  const [ colorPalettes, setColorPalettes ] = useState([])
+
+  const fetchColorPalettes = useCallback( async () => {
+    const result = await fetch(
+      'https://color-palette-api.kadikraman.now.sh/palettes'
+    );
+    const data = await result.json()
+    setColorPalettes(data)
+  }, [] )
+
+  useEffect(() => {
+    fetchColorPalettes();
+  }, [fetchColorPalettes])  
+
   const previewNum = 5
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={ () => navigation.navigate('ColorPalette', { paletteName: 'Solarized', colors: COLORS }) }>
-        <ColorPreview previewColors={COLORS.slice(0,previewNum)} paletteName='Solarized' />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={ () => navigation.navigate('ColorPalette', { paletteName: 'Frontend Masters', colors: FRONTEND_MASTERS }) }>
-        <ColorPreview previewColors={FRONTEND_MASTERS.slice(0,previewNum)} paletteName='Frontend Masters' />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={ () => navigation.navigate('ColorPalette', { paletteName: 'Rainbow', colors: RAINBOW }) }>
-        <ColorPreview previewColors={RAINBOW.slice(0,previewNum)} paletteName='Rainbow' />
-      </TouchableOpacity>
-    </View>
+    <FlatList
+      contentContainerStyle={styles.container}
+      keyExtractor={(item) => item.paletteName}
+      renderItem={({ item }) => (
+        <TouchableOpacity onPress={ () => navigation.navigate('ColorPalette', { paletteName: item.paletteName, colors: item.colors }) }>
+          <ColorPreview previewColors={item.colors.slice(0,previewNum)} paletteName={item.paletteName} />
+        </TouchableOpacity>
+      )}
+      data={colorPalettes}
+    />
   );
 };
 
