@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 import ColorPreview from "../components/ColorPreview"
 
@@ -41,6 +41,7 @@ const RAINBOW = [
 export default function Home() {
   const navigation = useNavigation();
   const [ colorPalettes, setColorPalettes ] = useState([])
+  const [refreshing, setRefreshing] = useState(false)
 
   const fetchColorPalettes = useCallback( async () => {
     const result = await fetch(
@@ -50,6 +51,14 @@ export default function Home() {
     setColorPalettes(data)
   }, [] )
 
+  const handleRefresh = useCallback( async () => {
+    setRefreshing(true)
+    await fetchColorPalettes()
+    setTimeout(() => {
+      setRefreshing(false)
+    }, 1000);
+  })
+
   useEffect(() => {
     fetchColorPalettes();
   }, [fetchColorPalettes])  
@@ -57,6 +66,7 @@ export default function Home() {
   const previewNum = 5
   return (
     <FlatList
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}    
       contentContainerStyle={styles.container}
       keyExtractor={(item) => item.paletteName}
       renderItem={({ item }) => (
