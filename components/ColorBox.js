@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
-export default function ColourBox({ hexCode, colourName }) {
+export default function ColorBox({ hexCode, colorName }) {
+  const textColor = parseInt(hexCode.replace('#', ''), 16) > 0xffffff / 1.1 ? 'black':'white'
   return (
     <View style={[styles.box, { backgroundColor: hexCode }]}>
-      <Text style={styles.boxText}>{colourName} {hexCode}</Text>
+      <Text style={[styles.boxText, { color: textColor }]}>{colorName} {hexCode}</Text>
     </View>
   );
 }
